@@ -1,5 +1,8 @@
 {
+  "//": "Shared team settings; see .claude/README.md. No \"//\" inside hooks (breaks the file).",
+  "// hooks": "SessionStart: env check. PreToolUse: git-guard.py asks/denies push, reset, PR in any form.",
   "permissions": {
+    "//": "ask: pushes, PRs, all GitHub MCP calls. deny: force push, hard reset.",
     "ask": [
       "Bash(git push *)",
       "Bash(gh pr create *)",
@@ -7,7 +10,8 @@
       "mcp__github__create_pull_request",
       "mcp__github__merge_pull_request",
       "mcp__github__push_files",
-      "mcp__github__create_or_update_file"
+      "mcp__github__create_or_update_file",
+      "mcp__github"
     ],
     "deny": [
       "Bash(git push --force *)",
@@ -24,6 +28,7 @@
           {
             "type": "command",
             "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/session-env.sh",
+            "statusMessage": "Checking Java, Maven and DB ports",
             "timeout": 15
           }
         ]
@@ -36,6 +41,7 @@
           {
             "type": "command",
             "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/git-guard.py\"",
+            "statusMessage": "git-guard: checking for push, reset, PR",
             "timeout": 10
           }
         ]
