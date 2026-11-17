@@ -106,8 +106,13 @@ To opt in, put this in your own `.claude/settings.local.json` (or run
   }
 }
 ```
- A committed file is a convention, not
-enforcement; anything people must not opt out of belongs in managed settings.
+
+`settings.local.json` is listed in the repository's `.gitignore`, so it stays
+personal even for people without a global git ignore file.
+
+Even the committed settings are a convention, not enforcement: anyone can
+edit or delete them in their own checkout. Anything people must not opt out of belongs in managed
+settings (see below).
 
 ### Verified
 

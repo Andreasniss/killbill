@@ -230,3 +230,6 @@ logs/
 util/sql
 /.codex
 /.idea/copilot.data.migration.ask2agent.xml
+
+# Claude Code personal settings
+.claude/settings.local.json
