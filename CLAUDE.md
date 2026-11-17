@@ -14,8 +14,10 @@ Parent POM is `org.kill-bill.billing:killbill-oss-parent` (build config, plugin 
 - Skip quality gates for fast iteration (same flags `bin/start-server` uses): `-Dcheck.skip-dependency=true -Dcheck.skip-dependency-scope=true -Dcheck.skip-dependency-versions=true -Dcheck.skip-duplicate-finder=true -Dcheck.skip-enforcer=true -Dcheck.skip-rat=true -Dcheck.skip-spotbugs=true`
 - One module (and what it depends on): `mvn -pl invoice -am install -DskipTests`
 - Single test class / method (TestNG + Surefire): `mvn -pl invoice test -Dtest=TestFoo` or `-Dtest=TestFoo#testBar`
+- Tests are TestNG-grouped (`groups = "fast"` = no DB, `"slow"` = needs DB). Surefire profiles come from the parent POM, and **the default profile runs only `fast`**, so a `-Dtest=` targeting a slow test runs nothing unless you pick a DB profile:
+  - `-Ph2`: fast+slow on embedded H2 (no external DB needed)
+  - `-Plocaltest-mysql` / `-Plocaltest-postgresql`: fast+slow against a local DB (`useLocalDb=true`); create or reset the schema first with `bin/db-helper -a create|clean [--driver postgres] -d killbill -t` (`-t` also loads the test DDL; on macOS this needs GNU `getopt`). `bin/clean-and-install` does a MySQL clean and a full build.
 - Run the server (Jetty, port 8080, uses `profiles/killbill`): `bin/start-server -s` (`-d` debug on 12345, `-p` port). Config defaults in `profiles/killbill/src/main/resources/killbill-server.properties`.
-- Many tests need a database (embedded H2 or MySQL/Postgres via the shared test harness in `killbill-commons`); `bin/db-helper` helps with DB setup.
 - CI delegates to the shared workflow in `killbill/gh-actions-shared`, plus an `e2e` job running Ruby client tests against a built server.
 
 ## Architecture
@@ -29,6 +31,7 @@ Modules are one per billing domain, each exposing its public interface through t
 - `profiles/killbill` (full server: Jetty webapp, `killbill-server.properties`) and `profiles/killpay` (payments-only profile).
 
 Cross-cutting patterns:
+
 - Dependency injection with Guice; each module is installed explicitly by the server's wiring, and tests swap in `Test*Module`/`Mock*Module` variants.
 - Modules communicate asynchronously through the internal event bus (`killbill-queue`/`killbill-notificationq` persistent bus and notification queues, tables in DB) in addition to direct API calls; many flows (invoicing after a subscription change, payment retries, overdue) are driven by bus events or scheduled notifications rather than direct calls.
 - Everything is multi-tenant and audited: calls carry a `CallContext`/`TenantContext`, and internal variants (`InternalCallContext`) carry `accountRecordId`/`tenantRecordId` — pass these through rather than constructing new ones.
